@@ -18,18 +18,31 @@ public class VideoController : MonoBehaviour
     [Header("Video showing config")]
     [SerializeField] public float timeToShowEachClip;       //Expressed in seconds
     [SerializeField] public float timeBetweenClips;         //Expressed in seconds
-    [SerializeField] public float audioVolume;              //This should affect the ambisonic audio clip
+    [SerializeField] public float audioVolume;              //This should affect the ambisonic audio clip. Affects both experiment and replay mode!
     [SerializeField] public float playbackSpeed = 1.0f;     //Video and audio reproduction speed
-    [SerializeField] public bool enableSound;               //This should affect the ambisonic audio, the video clips will ALWAYS be muted
+    [SerializeField] public bool enableSound;               //This should affect the ambisonic audio, the video clips will ALWAYS be muted. Affects both experiment and replay mode!
     [SerializeField] public bool randomStartingTimeStamp;   //Start at 0:00 or at a random timestamp on the interval {0:00 .. (videoLength - timeToShowEachClip)}
     [SerializeField] public StartingHeadOrientation startingHeadOrientation;
 
     private VideoPlayer videoPlayer;
     private AudioSource audioSource;
     private bool[] alreadyShownVideos;                      //To track which videos have already been shown to the user and avoid playing them more than once
+    private Coroutine coroutine = null;
 
     [Header("Logging config")]
     [SerializeField] private HeadPositionLogger headLogger;
+
+    private bool isReady = false;                           //Needed for synchronization at the start of execution
+
+
+    void OnApplicationQuit()
+    {
+        if (coroutine != null)
+        {
+            StopCoroutine(coroutine);
+            coroutine = null;
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -52,10 +65,22 @@ public class VideoController : MonoBehaviour
         {
             alreadyShownVideos[i] = false;
         }
-        StartCoroutine(PlayMedia());
+        isReady = true;
     }
 
-    private IEnumerator PlayMedia()
+
+    /// Call one of the following two somewhere ///             //TODO
+    public void playVideoQueue(int[] IDs, float[] startingTimestamps, float[] timeToPlayEach)
+    {
+        coroutine = StartCoroutine(VideoLoopFromQueue(IDs, startingTimestamps, timeToPlayEach));
+    }
+
+    public void playVideosRandomly()
+    {
+        coroutine = StartCoroutine(VideoLoop());
+    }
+
+    private IEnumerator VideoLoop()
     {
         for (int i = 0; i < numberOfVideosToShow; i++)
         {
@@ -66,7 +91,26 @@ public class VideoController : MonoBehaviour
             StopCurrentlyPlayingMedia(videoID);
             yield return new WaitForSeconds(timeBetweenClips);                                              //Delay between clips for a specified amount of time
         }
+        Debug.Log("QUIT CALLED FROM VIDEOLOOP!");
+        Application.Quit();
+        UnityEditor.EditorApplication.isPlaying = false;
     }
+
+    private IEnumerator VideoLoopFromQueue(int[] IDs, float[] startingTimestamps, float[] timeToPlayEach)   //HeadDataReplayer will load a log queue and call this to play those clips
+    {
+        for(int i = 0; i < IDs.Length; i++)
+        {
+            AdjustRenderTextureDimensions(IDs[i]);
+            PlayMediaFromTimestamp(IDs[i], startingTimestamps[i]);                      //TODO I need to make a v2 of this
+            yield return new WaitForSeconds(timeToPlayEach[i]);                         //need a second float array from the logs extracted data to determine the playing time, and a third one for the starting timestamps
+            StopCurrentlyPlayingMedia(IDs[i]);                                          //this should work in both modes without changes
+            yield return new WaitForSeconds(timeBetweenClips);                          //Should i use this config? or set up another variable specifically for this mode?
+        }
+        Debug.Log("QUIT CALLED FROM VIDEOLOOPFROMQUEUE!");
+        Application.Quit();
+        UnityEditor.EditorApplication.isPlaying = false;
+    }
+
 
     private void AdjustRenderTextureDimensions(int videoID)
     {
@@ -76,11 +120,13 @@ public class VideoController : MonoBehaviour
 
     private void StopCurrentlyPlayingMedia(int videoID)
     {
-        headLogger.StopLogging();
+        if(headLogger.IsLogging())
+        {
+            headLogger.StopLogging();
+        }
         videoPlayer.Stop();
         audioSource.Stop();
         videoPlayer.targetTexture.Release();
-        Debug.Log("Parando el vídeo tras el tiempo especificado.");
     }
 
     private float PrepareMediaToPlay(int id)
@@ -163,11 +209,10 @@ public class VideoController : MonoBehaviour
             chosenID = Random.Range(0, videos.Length);
         }
         while (alreadyShownVideos[chosenID]);
-        Debug.Log("Elegido el vídeo número " + chosenID);
         return chosenID;
     }
 
-    public void PlayMedia(int id)
+    public void PlayMedia(int id)                    //Use this one to play videos/audio during the experiments, starting point of the video will be decided by the user
     {
         videoPlayer.clip = videos[id];
         audioSource.clip = audios[id];
@@ -177,9 +222,53 @@ public class VideoController : MonoBehaviour
         audioSource.Play();
     }
 
+
+    private void PrepareMediaToPlayFromTimestamp(int id, float timestamp)
+    {
+        videoPlayer.Prepare();                  //Important if we want to seek to a random timestamp before playing the video
+
+        //Mute audio from the video clip, ambisonic audio will be loaded and played through a different file
+        for (ushort i = 0; i < videoPlayer.audioTrackCount; i++)
+        {
+            videoPlayer.SetDirectAudioMute(i, true);
+        }
+
+        if (!enableSound)
+        {
+            audioVolume = 0.0f;
+        }
+        audioSource.volume = audioVolume;       //We control the AudioSource volume from this component, value in range [0..1]
+
+        if (videoPlayer.canSetTime)
+        {
+            videoPlayer.time = (double)timestamp;
+            audioSource.time = timestamp;
+            Debug.Log("Se va a empezar la reproducción en el segundo " + (double)timestamp + " del video con duracion " + videoPlayer.clip.length);  //DEBUG
+        }
+        else
+        {
+            Debug.Log("videoPlayer.canSetTime == false!");
+        }
+    }
+
+    public void PlayMediaFromTimestamp(int id, float startingTimestamp)  //Use this one to play videos/audio when on replay mode, starting point of the video will be determined by the log loaded by the HeadDataReplayer calling this
+    {
+        videoPlayer.clip = videos[id];
+        audioSource.clip = audios[id];
+        PrepareMediaToPlayFromTimestamp(id, startingTimestamp);
+        //headLogger.StartLogging(id, startTime);           //maybe i'll log this for debug, TODO delete later
+        videoPlayer.Play();
+        audioSource.Play();
+    }
+
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    public bool IsReady()
+    {
+        return isReady;
     }
 }

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.4158268, g: 0.4358357, b: 0.46504182, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -219,8 +219,8 @@ MonoBehaviour:
   audioVolume: 1
   playbackSpeed: 1
   enableSound: 1
-  randomStartingTimeStamp: 0
-  startingHeadOrientation: 0
+  randomStartingTimeStamp: 1
+  startingHeadOrientation: 1
   headLogger: {fileID: 887724797}
 --- !u!82 &199995277
 AudioSource:
@@ -372,7 +372,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   headToTrack: {fileID: 963194225}
   loggingFolderName: Logs
-  sampleRateInMilliseconds: 50
+  sampleRateInMilliseconds: 16
   enableLogging: 1
 --- !u!4 &887724798
 Transform:
@@ -485,3 +485,99 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mouse_NoKeyboard: 0
+--- !u!1 &1255992694
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1255992696}
+  - component: {fileID: 1255992695}
+  m_Layer: 0
+  m_Name: MODE SELECTOR
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1255992695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1255992694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8944e49fa27a8c84c9d09caad4d2e69e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  videoController: {fileID: 199995276}
+  headPositionLogger: {fileID: 887724797}
+  headDataReplayer: {fileID: 1885213690}
+  desiredProgramBehavior: 2
+--- !u!4 &1255992696
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1255992694}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -24.50935, y: -17.355373, z: -5.568316}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1885213689
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1885213691}
+  - component: {fileID: 1885213690}
+  m_Layer: 0
+  m_Name: ReplayFromLogs
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1885213690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885213689}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c0e905e5029906409cda065d215d449, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  videoController: {fileID: 199995276}
+  cameraToRotate: {fileID: 963194227}
+  logsToLoad:
+  - {fileID: 4900000, guid: d2ac04a1a0d7d824f945c486fba235c6, type: 3}
+  - {fileID: 4900000, guid: 08c8c7d7520169441817e827c7fc70db, type: 3}
+  - {fileID: 4900000, guid: c873d429ef5142145b98114551836e68, type: 3}
+--- !u!4 &1885213691
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885213689}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
