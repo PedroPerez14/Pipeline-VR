@@ -6,7 +6,7 @@ public enum DesiredProgramBehavior {playClipsAndDontLogData, playClipsAndLogData
 
 public class ModeSelector : MonoBehaviour
 {
-    [Header("Components that will make everything go BRR")]
+    [Header("Components that will make everything work")]
     public VideoController videoController;
     public HeadPositionLogger headPositionLogger;
     public HeadDataReplayer headDataReplayer;

@@ -564,9 +564,9 @@ MonoBehaviour:
   videoController: {fileID: 199995276}
   cameraToRotate: {fileID: 963194227}
   logsToLoad:
-  - {fileID: 4900000, guid: d2ac04a1a0d7d824f945c486fba235c6, type: 3}
-  - {fileID: 4900000, guid: 08c8c7d7520169441817e827c7fc70db, type: 3}
-  - {fileID: 4900000, guid: c873d429ef5142145b98114551836e68, type: 3}
+  - {fileID: 4900000, guid: 0a07b9676c3298e419efa100dbc23906, type: 3}
+  - {fileID: 4900000, guid: 0a07b9676c3298e419efa100dbc23906, type: 3}
+  - {fileID: 4900000, guid: 0a07b9676c3298e419efa100dbc23906, type: 3}
 --- !u!4 &1885213691
 Transform:
   m_ObjectHideFlags: 0

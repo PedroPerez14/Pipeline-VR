@@ -56,7 +56,7 @@ public class HeadDataReplayer : MonoBehaviour
         {
             //We start our own timer to know what logged rotations to interpolate, according to the timestamps specified in the cached logs
             replayStartingTimestamp = (double)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
-            lastSampleIndex = 0;        //The 4th line of a log is the first one that actually contains logged data
+            lastSampleIndex = 0;        
             nextSampleIndex = 1;        //lastSampleIndex + 1
             currentLogOnReplay = i;     //which replay index are we processing, this will be read by update()
             //from now on, Update() will interpolate the camera's position, and will get the right values for lastSampleIndex and nextSampleIndex
@@ -152,8 +152,8 @@ public class HeadDataReplayer : MonoBehaviour
         logQuaternionCache = new Quaternion[logsToLoad.Length][];
         for (int i = 0; i < logsToLoad.Length; i++)
         {
-            logQuaternionCache[i] = new Quaternion[logsCache[i].Length - (STARTINGLOGINDEX + 1)];         //Last line of a log will be empty so we don't count that one
-            for (int j = STARTINGLOGINDEX; j < logsCache[i].Length - 1; j++)                        //Same here
+            logQuaternionCache[i] = new Quaternion[logsCache[i].Length - (STARTINGLOGINDEX + 1)];       //Last line of a log will be empty so we don't count that one
+            for (int j = STARTINGLOGINDEX; j < logsCache[i].Length - 1; j++)                            //Same here
             {
                 string aux = logsCache[i][j].Split(';')[2].Replace("(", "").Replace(")", "");
                 float x = float.Parse(aux.Split(',')[0], ci);
@@ -236,13 +236,11 @@ public class HeadDataReplayer : MonoBehaviour
 
     public void startReplay()
     {
-        Debug.Log("Dentro modo replay!");
         enableReplay = true;
     }
 
     public void stopReplay()
     {
-        Debug.Log("Fuera modo replay!");
         enableReplay = false;
     }
 
@@ -252,7 +250,7 @@ public class HeadDataReplayer : MonoBehaviour
         if(enableReplay)
         {
             currentReplayTimestamp = ((double)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds - replayStartingTimestamp) / 1000.0;
-            while ((float)currentReplayTimestamp >= logTimestampCache[currentLogOnReplay][nextSampleIndex]) //If the elapsed time between frames > time between 2 log entries, we seek the correct entry to log it
+            while ((float)currentReplayTimestamp >= logTimestampCache[currentLogOnReplay][nextSampleIndex]) //If the elapsed time between frames > time between 2 log entries, we seek the correct entry to interpolate
             {
                 lastSampleIndex++;
                 nextSampleIndex++;
