@@ -78,6 +78,15 @@ public class VideoController : MonoBehaviour
     public void playVideosRandomly()
     {
         coroutine = StartCoroutine(VideoLoop());
+        string[] videoNames = new string[videos.Length];
+        string[] audioNames = new string[audios.Length];                                                //videos[] and audios[] should have the same length
+        for(int i = 0; i < videos.Length; i++)
+        {
+            videoNames[i] = videos[i].name;
+            audioNames[i] = audios[i].name;
+        }
+        headLogger.CreateVideoNamesList(videoNames);                                                    //Create a .txt file containing the order of the video clips right before the logging starts
+        headLogger.CreateAudioNamesList(audioNames);                                                    //Create a .txt file containing the order of the audio clips right before the logging starts
     }
 
     private IEnumerator VideoLoop()

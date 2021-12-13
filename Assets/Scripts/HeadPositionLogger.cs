@@ -4,6 +4,7 @@ using UnityEngine;
 using System.IO;
 using System;
 using System.Threading;
+using UnityEngine.Video;
 
 public class HeadPositionLogger : MonoBehaviour
 {
@@ -62,6 +63,47 @@ public class HeadPositionLogger : MonoBehaviour
         else
         {
             Debug.LogError("Logging failed: This log file already exists! " + fullPath);
+        }
+    }
+
+    public void CreateVideoNamesList(string[] names)
+    {
+        if(enableLogging)
+        {
+            string _fileDate = System.DateTime.UtcNow.ToLocalTime().ToString("ddMMyyyy_HHmmss");
+            string filePath = Application.dataPath + "/" + loggingFolderName + "/" + _fileDate + "_video_clips_list" + ".txt";
+            if (!File.Exists(filePath))
+            {
+                for(int i = 0; i < names.Length; i++)
+                {
+                    File.AppendAllText(filePath, names[i] + "\n");
+                }
+            }
+            else
+            {
+                Debug.LogError("Error creating text file with video clip names: This file already exists! " + filePath);
+            }
+        }
+        
+    }
+    
+    public void CreateAudioNamesList(string[] names)
+    {
+        if(enableLogging)
+        {
+            string _fileDate = System.DateTime.UtcNow.ToLocalTime().ToString("ddMMyyyy_HHmmss");
+            string filePath = Application.dataPath + "/" + loggingFolderName + "/" + _fileDate + "_audio_clips_list" + ".txt";
+            if (!File.Exists(filePath))
+            {
+                for(int i = 0; i < names.Length; i++)
+                {
+                    File.AppendAllText(filePath, names[i] + "\n");
+                }
+            }
+            else
+            {
+                Debug.LogError("Error creating text file with audio clip names: This file already exists! " + filePath);
+            }
         }
     }
 

@@ -162,7 +162,6 @@ public class HeadDataReplayer : MonoBehaviour
                 float w = float.Parse(aux.Split(',')[3], ci);
                 Quaternion quat = new Quaternion(x, y, z, w);
                 logQuaternionCache[i][j - STARTINGLOGINDEX] = quat;
-                Debug.Log("Quaternion " + i + ": " + x + "," + y + "," + z + "," + w + " -- " + quat);
             }
         }
     }
@@ -181,8 +180,7 @@ public class HeadDataReplayer : MonoBehaviour
                 float y = float.Parse(aux.Split(',')[1], ci);
                 float z = float.Parse(aux.Split(',')[2], ci);
                 Vector3 fwd = new Vector3(x, y, z);
-                logForwardCache[i][j - STARTINGLOGINDEX] = fwd;
-                Debug.Log("FWD " + i + ": " + x + "," + y + "," + z + " -- " + logForwardCache[i][j - STARTINGLOGINDEX]);
+                logForwardCache[i][j - STARTINGLOGINDEX] = fwd;            
             }
         }
     }
