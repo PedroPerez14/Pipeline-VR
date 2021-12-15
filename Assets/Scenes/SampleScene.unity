@@ -214,13 +214,13 @@ MonoBehaviour:
   - {fileID: 8300000, guid: af6ee354651371a4c829ee23801a67d0, type: 3}
   - {fileID: 8300000, guid: af6ee354651371a4c829ee23801a67d0, type: 3}
   numberOfVideosToShow: 3
-  timeToShowEachClip: 5
+  timeToShowEachClip: 1e+14
   timeBetweenClips: 1
   audioVolume: 1
   playbackSpeed: 1
   enableSound: 1
-  randomStartingTimeStamp: 1
-  startingHeadOrientation: 1
+  randomStartingTimeStamp: 0
+  startingHeadOrientation: 0
   headLogger: {fileID: 887724797}
 --- !u!82 &199995277
 AudioSource:
@@ -517,7 +517,7 @@ MonoBehaviour:
   videoController: {fileID: 199995276}
   headPositionLogger: {fileID: 887724797}
   headDataReplayer: {fileID: 1885213690}
-  desiredProgramBehavior: 1
+  desiredProgramBehavior: 0
 --- !u!4 &1255992696
 Transform:
   m_ObjectHideFlags: 0
@@ -530,7 +530,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1741418126
 GameObject:
@@ -560,7 +560,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1885213689
 GameObject:
@@ -593,10 +593,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   videoController: {fileID: 199995276}
   cameraToRotate: {fileID: 963194227}
-  logsToLoad:
-  - {fileID: 4900000, guid: 0a07b9676c3298e419efa100dbc23906, type: 3}
-  - {fileID: 4900000, guid: 0a07b9676c3298e419efa100dbc23906, type: 3}
-  - {fileID: 4900000, guid: 0a07b9676c3298e419efa100dbc23906, type: 3}
+  logsToLoad: []
 --- !u!4 &1885213691
 Transform:
   m_ObjectHideFlags: 0
