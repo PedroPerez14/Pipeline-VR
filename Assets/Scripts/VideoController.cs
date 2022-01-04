@@ -75,7 +75,7 @@ public class VideoController : MonoBehaviour
         coroutine = StartCoroutine(VideoLoopFromQueue(IDs, startingTimestamps, timeToPlayEach));
     }
 
-    public void playVideosRandomly()
+    public IEnumerator playVideosRandomly()
     {
         coroutine = StartCoroutine(VideoLoop());
         string[] videoNames = new string[videos.Length];
@@ -87,6 +87,7 @@ public class VideoController : MonoBehaviour
         }
         headLogger.CreateVideoNamesList(videoNames);                                                    //Create a .txt file containing the order of the video clips right before the logging starts
         headLogger.CreateAudioNamesList(audioNames);                                                    //Create a .txt file containing the order of the audio clips right before the logging starts
+        yield return coroutine;
     }
 
     private IEnumerator VideoLoop()

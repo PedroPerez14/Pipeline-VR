@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum DesiredProgramBehavior {playClipsAndDontLogData, playClipsAndLogData, logBasedReplayMode, replayDebugMode};
+public enum DesiredProgramBehavior {playClipsAndDontLogData, playClipsAndLogData, logBasedReplayMode, replayDebugMode, computeSaliencyMaps};
 
 public class ModeSelector : MonoBehaviour
 {
@@ -10,6 +10,7 @@ public class ModeSelector : MonoBehaviour
     public VideoController videoController;
     public HeadPositionLogger headPositionLogger;
     public HeadDataReplayer headDataReplayer;
+    public SaliencyMapsGenerator saliencyMapsGenerator;
 
     [Header("Select one behavior for the program")]
     public DesiredProgramBehavior desiredProgramBehavior;
@@ -22,27 +23,33 @@ public class ModeSelector : MonoBehaviour
     // The program will start running here
     IEnumerator Start()
     {
-        yield return new WaitUntil(() => (videoController.IsReady() && headPositionLogger.IsReady() && headDataReplayer.IsReady())); //Wait until every necessary component is ready to work properly
+        yield return new WaitUntil(() => (videoController.IsReady() && headPositionLogger.IsReady() && headDataReplayer.IsReady() && saliencyMapsGenerator.IsReady())); //Wait until every necessary component is ready to work properly
         switch (desiredProgramBehavior)
         {
-            case DesiredProgramBehavior.playClipsAndDontLogData:                //Just show the videos
+            case DesiredProgramBehavior.playClipsAndDontLogData:                        //Just show the videos
                 headPositionLogger.enableLogging = false;
-                videoController.playVideosRandomly();
+                yield return StartCoroutine(videoController.playVideosRandomly());
                 break;
-            case DesiredProgramBehavior.playClipsAndLogData:                    //Show videos and log info; use this when conducting experiments
+            case DesiredProgramBehavior.playClipsAndLogData:                            //Show videos and log info; use this when conducting experiments
                 headPositionLogger.enableLogging = true;
-                videoController.playVideosRandomly();
+                yield return StartCoroutine(videoController.playVideosRandomly());
                 break;
-            case DesiredProgramBehavior.logBasedReplayMode:                     //Tell HeadDataReplayer which logs to load and the program will create a live replay of them
+            case DesiredProgramBehavior.logBasedReplayMode:                             //Tell HeadDataReplayer which logs to load and the program will create a live replay of them
                 headPositionLogger.enableLogging = false;
-                headDataReplayer.replayQueuedLogs();
+                yield return StartCoroutine(headDataReplayer.replayQueuedLogs());
                 break;
-            case DesiredProgramBehavior.replayDebugMode:                        //Same as logBasedReplayMode, but logging is enabled in order to compare replay logs to the original ones
+            case DesiredProgramBehavior.replayDebugMode:                                //Same as logBasedReplayMode, but logging is enabled in order to compare replay logs to the original ones
                 headPositionLogger.enableLogging = true;
-                headDataReplayer.replayQueuedLogs();
+                yield return StartCoroutine(headDataReplayer.replayQueuedLogs());
+                break;
+            case DesiredProgramBehavior.computeSaliencyMaps:
+                headPositionLogger.enableLogging = false;
+                yield return StartCoroutine(saliencyMapsGenerator.ComputeFixationsAndSalMaps());     //Work in progress, still testing it
                 break;
             default:            //shouldn't happen
                 break;
         }
+        Application.Quit();
+        UnityEditor.EditorApplication.isPlaying = false;
     }
 }

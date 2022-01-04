@@ -8,6 +8,7 @@ public class CameraController : MonoBehaviour
 
     const float acc = 0.1f;
     float speed = 0.0f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -17,7 +18,7 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKey(KeyCode.Space))
+        if (Input.GetKey(KeyCode.Space))
         {
             mouse_NoKeyboard = true;
         }

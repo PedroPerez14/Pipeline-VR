@@ -213,14 +213,14 @@ MonoBehaviour:
   - {fileID: 8300000, guid: af6ee354651371a4c829ee23801a67d0, type: 3}
   - {fileID: 8300000, guid: af6ee354651371a4c829ee23801a67d0, type: 3}
   - {fileID: 8300000, guid: af6ee354651371a4c829ee23801a67d0, type: 3}
-  numberOfVideosToShow: 3
-  timeToShowEachClip: 1e+14
+  numberOfVideosToShow: 1
+  timeToShowEachClip: 10
   timeBetweenClips: 1
   audioVolume: 1
   playbackSpeed: 1
   enableSound: 1
   randomStartingTimeStamp: 0
-  startingHeadOrientation: 0
+  startingHeadOrientation: 2
   headLogger: {fileID: 887724797}
 --- !u!82 &199995277
 AudioSource:
@@ -400,6 +400,7 @@ GameObject:
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
   - component: {fileID: 963194229}
+  - component: {fileID: 963194230}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -485,6 +486,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mouse_NoKeyboard: 0
+--- !u!54 &963194230
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1255992694
 GameObject:
   m_ObjectHideFlags: 0
@@ -517,7 +534,8 @@ MonoBehaviour:
   videoController: {fileID: 199995276}
   headPositionLogger: {fileID: 887724797}
   headDataReplayer: {fileID: 1885213690}
-  desiredProgramBehavior: 0
+  saliencyMapsGenerator: {fileID: 1741418128}
+  desiredProgramBehavior: 4
 --- !u!4 &1255992696
 Transform:
   m_ObjectHideFlags: 0
@@ -541,6 +559,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1741418127}
+  - component: {fileID: 1741418128}
   m_Layer: 0
   m_Name: SaliencyMapsGenerator
   m_TagString: Untagged
@@ -562,6 +581,35 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1741418128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1741418126}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c228bf6c7a37b7409318f05370eceaf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  videoTitlesList: {fileID: 4900000, guid: f1f3ce5ea6901894f8b3148eaa597ee2, type: 3}
+  logsToProcess:
+  - {fileID: 4900000, guid: b899bc095f4f78346911cefe0dd404aa, type: 3}
+  - {fileID: 4900000, guid: 6c8d4f957f708de4f862fae02693801a, type: 3}
+  videoController: {fileID: 199995276}
+  start: 5
+  secondsToConsider: 5
+  outputFrameWidth: 384
+  outputFrameHeight: 192
+  outputFixationMaps: 1
+  outputSaliencyMaps: 1
+  fixationDetecionAlgorithm: 0
+  dynamicSpeedThreshold: 1
+  dynamicThreshDiscardPercent: 2
+  speedThresholdIVT: 120
+  sigmaInDegs: 1
+  maxFixationsPerCentroid: 1
 --- !u!1 &1885213689
 GameObject:
   m_ObjectHideFlags: 0
@@ -593,7 +641,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   videoController: {fileID: 199995276}
   cameraToRotate: {fileID: 963194227}
-  logsToLoad: []
+  logsToLoad:
+  - {fileID: 4900000, guid: 6c8d4f957f708de4f862fae02693801a, type: 3}
+  - {fileID: 4900000, guid: b899bc095f4f78346911cefe0dd404aa, type: 3}
+  - {fileID: 4900000, guid: 65df93bd2b138084ea639681e918b502, type: 3}
 --- !u!4 &1885213691
 Transform:
   m_ObjectHideFlags: 0

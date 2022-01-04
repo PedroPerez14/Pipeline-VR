@@ -65,7 +65,6 @@ public class HeadDataReplayer : MonoBehaviour
             stopReplay();
             yield return new WaitForSeconds(videoController.timeBetweenClips);
         }
-        Debug.Log("QUIT CALLED FROM REPLAYCOROUTINE!");
         Application.Quit();
         UnityEditor.EditorApplication.isPlaying = false;
     }
@@ -104,10 +103,11 @@ public class HeadDataReplayer : MonoBehaviour
         yield return new WaitUntil(() => videoController.IsReady());    //Wait for the video player to be fully initialized before telling it to play anything
     }
 
-    public void replayQueuedLogs()
+    public IEnumerator replayQueuedLogs()
     {
         videoController.playVideoQueue(associatedVideoIDs, startingTimestamps, timeToPlayEachVideo);
         coroutine = StartCoroutine(replayControlCoroutine());
+        yield return coroutine;
     }
 
     private void GenerateTimeStampsCache()
@@ -200,7 +200,6 @@ public class HeadDataReplayer : MonoBehaviour
                 float v = float.Parse(aux.Split(',')[1], ci);
                 Vector3 uv = new Vector2(u,v);
                 logUVCache[i][j - STARTINGLOGINDEX] = uv;
-                Debug.Log("FWD " + i + ": " + u + "," + v + " -- " + logUVCache[i][j - STARTINGLOGINDEX]);
             }
         }
     }
@@ -248,7 +247,7 @@ public class HeadDataReplayer : MonoBehaviour
         if(enableReplay)
         {
             currentReplayTimestamp = ((double)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds - replayStartingTimestamp) / 1000.0;
-            while ((float)currentReplayTimestamp >= logTimestampCache[currentLogOnReplay][nextSampleIndex]) //If the elapsed time between frames > time between 2 log entries, we seek the correct entry to interpolate
+            while (nextSampleIndex < logTimestampCache[currentLogOnReplay].Length-1 && (float)currentReplayTimestamp >= logTimestampCache[currentLogOnReplay][nextSampleIndex]) //If the elapsed time between frames > time between 2 log entries, we seek the correct entry to interpolate
             {
                 lastSampleIndex++;
                 nextSampleIndex++;
