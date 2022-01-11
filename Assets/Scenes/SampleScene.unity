@@ -213,14 +213,14 @@ MonoBehaviour:
   - {fileID: 8300000, guid: af6ee354651371a4c829ee23801a67d0, type: 3}
   - {fileID: 8300000, guid: af6ee354651371a4c829ee23801a67d0, type: 3}
   - {fileID: 8300000, guid: af6ee354651371a4c829ee23801a67d0, type: 3}
-  numberOfVideosToShow: 1
+  numberOfVideosToShow: 3
   timeToShowEachClip: 10
   timeBetweenClips: 1
   audioVolume: 1
   playbackSpeed: 1
   enableSound: 1
   randomStartingTimeStamp: 0
-  startingHeadOrientation: 2
+  startingHeadOrientation: 0
   headLogger: {fileID: 887724797}
 --- !u!82 &199995277
 AudioSource:
@@ -535,7 +535,7 @@ MonoBehaviour:
   headPositionLogger: {fileID: 887724797}
   headDataReplayer: {fileID: 1885213690}
   saliencyMapsGenerator: {fileID: 1741418128}
-  desiredProgramBehavior: 4
+  desiredProgramBehavior: 2
 --- !u!4 &1255992696
 Transform:
   m_ObjectHideFlags: 0

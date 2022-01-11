@@ -68,8 +68,7 @@ public class VideoController : MonoBehaviour
         isReady = true;
     }
 
-
-    /// Call one of the following two somewhere ///             //TODO
+    /// Call one of the following two somewhere (i do it on ModeSelector, works as an entry point) ///
     public void playVideoQueue(int[] IDs, float[] startingTimestamps, float[] timeToPlayEach)
     {
         coroutine = StartCoroutine(VideoLoopFromQueue(IDs, startingTimestamps, timeToPlayEach));
@@ -96,12 +95,11 @@ public class VideoController : MonoBehaviour
         {
             int videoID = ChooseRandomVideo();
             AdjustRenderTextureDimensions(videoID);                                                         //In case the video clips have different resolutions, we'll adjust the renderTexture
-            PlayMedia(videoID);
+            PlayMedia(videoID);                                                                             //video.play() and audio.play() with extra steps to make sure everything's ok
             yield return new WaitForSeconds(Mathf.Min((float)videoPlayer.clip.length, timeToShowEachClip)); //Play the video clip for the specified amount of time or clip duration, if it's shorter than expected
             StopCurrentlyPlayingMedia(videoID);
             yield return new WaitForSeconds(timeBetweenClips);                                              //Delay between clips for a specified amount of time
         }
-        Debug.Log("QUIT CALLED FROM VIDEOLOOP!");
         Application.Quit();
         UnityEditor.EditorApplication.isPlaying = false;
     }
@@ -116,7 +114,6 @@ public class VideoController : MonoBehaviour
             StopCurrentlyPlayingMedia(IDs[i]);                                          //this should work in both modes without changes
             yield return new WaitForSeconds(timeBetweenClips);                          //Should i use this config? or set up another variable specifically for this mode?
         }
-        Debug.Log("QUIT CALLED FROM VIDEOLOOPFROMQUEUE!");
         Application.Quit();
         UnityEditor.EditorApplication.isPlaying = false;
     }
@@ -124,6 +121,7 @@ public class VideoController : MonoBehaviour
 
     private void AdjustRenderTextureDimensions(int videoID)
     {
+        videoPlayer.targetTexture.Release();                                            //We cannot redimension the RenderTexture without relesaing it first
         videoPlayer.targetTexture.width = (int)videos[videoID].width;
         videoPlayer.targetTexture.height = (int)videos[videoID].height;
     }
@@ -200,7 +198,7 @@ public class VideoController : MonoBehaviour
                 int cameraOrientation = Random.Range(0, 3);
                 mainCamera.transform.eulerAngles = new Vector3(0, 90 * cameraOrientation, 0);
                 break;
-            case StartingHeadOrientation.fullyRandomized:                       //TODO uniform cosine sampling? very likely to be changed
+            case StartingHeadOrientation.fullyRandomized:                       //TODO uniform cosine sampling? i don't think this is necessary
                 float pitchRotationDegrees = Random.Range(-90.0f, 90.0f);
                 float yawRotationDegrees = Random.Range(-180.0f, 180.0f);
                 mainCamera.transform.eulerAngles = new Vector3(pitchRotationDegrees, yawRotationDegrees, 0);
@@ -253,11 +251,11 @@ public class VideoController : MonoBehaviour
         {
             videoPlayer.time = (double)timestamp;
             audioSource.time = timestamp;
-            Debug.Log("Se va a empezar la reproducción en el segundo " + (double)timestamp + " del video con duracion " + videoPlayer.clip.length);  //DEBUG
+            //Debug.Log("Se va a empezar la reproducción en el segundo " + (double)timestamp + " del video con duracion " + videoPlayer.clip.length);  //DEBUG
         }
         else
         {
-            Debug.Log("videoPlayer.canSetTime == false!");
+            Debug.Log("ERROR: videoPlayer.canSetTime == false!");
         }
     }
 
@@ -266,7 +264,6 @@ public class VideoController : MonoBehaviour
         videoPlayer.clip = videos[id];
         audioSource.clip = audios[id];
         PrepareMediaToPlayFromTimestamp(id, startingTimestamp);
-        //headLogger.StartLogging(id, startTime);           //maybe i'll log this for debug, TODO delete later
         videoPlayer.Play();
         audioSource.Play();
     }
