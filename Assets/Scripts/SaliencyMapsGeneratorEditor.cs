@@ -4,12 +4,12 @@ using UnityEngine;
 [CustomEditor(typeof(SaliencyMapsGenerator))]
 public class SaliencyMapsGeneratorEditor : Editor
 {
-    SerializedProperty speedThreshIVTProperty;
+    SerializedProperty velocityThreshIVTProperty;
     SerializedProperty discardPercentProperty;
 
     void OnEnable()
     {
-        speedThreshIVTProperty = serializedObject.FindProperty("speedThresholdIVT");
+        velocityThreshIVTProperty = serializedObject.FindProperty("velocityThresholdIVT");
         discardPercentProperty = serializedObject.FindProperty("dynamicThreshDiscardPercent");
     }
 
@@ -18,9 +18,9 @@ public class SaliencyMapsGeneratorEditor : Editor
         base.OnInspectorGUI();
 
         SaliencyMapsGenerator myBehaviour = (target as SaliencyMapsGenerator);
-        if (!myBehaviour.dynamicSpeedThreshold)
+        if (!myBehaviour.dynamicVelocityThreshold)
         {
-            EditorGUILayout.PropertyField(speedThreshIVTProperty);
+            EditorGUILayout.PropertyField(velocityThreshIVTProperty);
         }
         else
         {

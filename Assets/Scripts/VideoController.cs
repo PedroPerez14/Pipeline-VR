@@ -10,27 +10,33 @@ public class VideoController : MonoBehaviour
     public enum StartingHeadOrientation { noRotation, randomize90DegIntervals, fullyRandomized };
 
     [SerializeField] private Camera mainCamera;
+    [SerializeField] private GameObject cameraParent;
     [Header("Video pool options")]
     [SerializeField] public VideoClip[] videos;
     [SerializeField] public AudioClip[] audios;             //Please make sure to place the audio clips in the same position as their corresponding video clip
     public int numberOfVideosToShow;                        //Number of videos to be randomly shown to the user among the preloaded ones
 
+    [Header("Logging config")]
+    [SerializeField] private HeadPositionLogger headLogger;
+    [SerializeField] private EyeDataLogger eyeDataLogger;
+
     [Header("Video showing config")]
     [SerializeField] public float timeToShowEachClip;       //Expressed in seconds
-    [SerializeField] public float timeBetweenClips;         //Expressed in seconds
+    [SerializeField] public bool findCubeBetweenClips;      //By enabling this a cube will be placed in the 3d space, looking at it will trigger the next video clip on the list //TODO
+    [HideInInspector] public float timeBetweenClips;         //Expressed in seconds
     [SerializeField] public float audioVolume;              //This should affect the ambisonic audio clip. Affects both experiment and replay mode!
     [SerializeField] public float playbackSpeed = 1.0f;     //Video and audio reproduction speed
     [SerializeField] public bool enableSound;               //This should affect the ambisonic audio, the video clips will ALWAYS be muted. Affects both experiment and replay mode!
     [SerializeField] public bool randomStartingTimeStamp;   //Start at 0:00 or at a random timestamp on the interval {0:00 .. (videoLength - timeToShowEachClip)}
     [SerializeField] public StartingHeadOrientation startingHeadOrientation;
+    [HideInInspector] public GameObject cubeToTriggerPlay;  //If findCubeBetweenClips, looking at this cube for (0.2?) secs will play the enxt video and audio clips //WIP
 
     private VideoPlayer videoPlayer;
     private AudioSource audioSource;
     private bool[] alreadyShownVideos;                      //To track which videos have already been shown to the user and avoid playing them more than once
     private Coroutine coroutine = null;
-
-    [Header("Logging config")]
-    [SerializeField] private HeadPositionLogger headLogger;
+    private float lookAtObjectTimer;
+    private bool objectHasBeenFound;                        //Has the user been staring at the 3d object (cube by default) during the required amount of time (~0.2s) before playing the next clip?
 
     private bool isReady = false;                           //Needed for synchronization at the start of execution
 
@@ -65,6 +71,11 @@ public class VideoController : MonoBehaviour
         {
             alreadyShownVideos[i] = false;
         }
+
+        objectHasBeenFound = false;
+        lookAtObjectTimer = 0.0f;
+        cubeToTriggerPlay.SetActive(false);                   //Hide the cube for now
+
         isReady = true;
     }
 
@@ -89,6 +100,23 @@ public class VideoController : MonoBehaviour
         yield return coroutine;
     }
 
+    private void PlaceObjectAroundUser()
+    {
+        cubeToTriggerPlay.transform.position = new Vector3(Random.Range(1.0f, 5.0f) * Mathf.Sign(Random.Range(-1.0f, 1.0f)), Random.Range(1.0f, 5.0f) * Mathf.Sign(Random.Range(-1.0f, 1.0f)), Random.Range(1.0f, 5.0f) * Mathf.Sign(Random.Range(-1.0f, 1.0f)));
+    }
+
+    private IEnumerator WaitForUserToFindObject()
+    {
+        PlaceObjectAroundUser();
+        cubeToTriggerPlay.SetActive(true);                                                                  //Show the cube
+        Debug.Log("Waiting for user to find cube before playing the next video clip...");
+        yield return new WaitUntil(() => objectHasBeenFound);
+        Debug.Log("Cube found! Playing next video...");
+        lookAtObjectTimer = 0.0f;                                                                           //Reset time count
+        objectHasBeenFound = false;                                                                         //And flag's value
+        cubeToTriggerPlay.SetActive(false);                                                                 //Finally, hide the cube again
+    }
+
     private IEnumerator VideoLoop()
     {
         for (int i = 0; i < numberOfVideosToShow; i++)
@@ -98,7 +126,17 @@ public class VideoController : MonoBehaviour
             PlayMedia(videoID);                                                                             //video.play() and audio.play() with extra steps to make sure everything's ok
             yield return new WaitForSeconds(Mathf.Min((float)videoPlayer.clip.length, timeToShowEachClip)); //Play the video clip for the specified amount of time or clip duration, if it's shorter than expected
             StopCurrentlyPlayingMedia(videoID);
-            yield return new WaitForSeconds(timeBetweenClips);                                              //Delay between clips for a specified amount of time
+            if (i != numberOfVideosToShow - 1)                                                              //No need to show the cube / wait time after the alst video clip
+            {
+                if (findCubeBetweenClips)
+                {
+                    yield return StartCoroutine(WaitForUserToFindObject());                                 //Users will have to look at this cube for at least 0.2 seconds, to make sure they are focusing their attention on it
+                }
+                else
+                {
+                    yield return new WaitForSeconds(timeBetweenClips);                                      //Delay between clips for a specified amount of time
+                }
+            }        
         }
         Application.Quit();
         UnityEditor.EditorApplication.isPlaying = false;
@@ -109,10 +147,10 @@ public class VideoController : MonoBehaviour
         for(int i = 0; i < IDs.Length; i++)
         {
             AdjustRenderTextureDimensions(IDs[i]);
-            PlayMediaFromTimestamp(IDs[i], startingTimestamps[i]);                      //TODO I need to make a v2 of this
+            PlayMediaFromTimestamp(IDs[i], startingTimestamps[i]);                      
             yield return new WaitForSeconds(timeToPlayEach[i]);                         //need a second float array from the logs extracted data to determine the playing time, and a third one for the starting timestamps
-            StopCurrentlyPlayingMedia(IDs[i]);                                          //this should work in both modes without changes
-            yield return new WaitForSeconds(timeBetweenClips);                          //Should i use this config? or set up another variable specifically for this mode?
+            StopCurrentlyPlayingMedia(IDs[i]);                                          
+            yield return new WaitForSeconds(timeBetweenClips);
         }
         Application.Quit();
         UnityEditor.EditorApplication.isPlaying = false;
@@ -121,7 +159,7 @@ public class VideoController : MonoBehaviour
 
     private void AdjustRenderTextureDimensions(int videoID)
     {
-        videoPlayer.targetTexture.Release();                                            //We cannot redimension the RenderTexture without relesaing it first
+        videoPlayer.targetTexture.Release();                                            //We cannot properly redimension the RenderTexture without relesaing it first
         videoPlayer.targetTexture.width = (int)videos[videoID].width;
         videoPlayer.targetTexture.height = (int)videos[videoID].height;
     }
@@ -132,6 +170,11 @@ public class VideoController : MonoBehaviour
         {
             headLogger.StopLogging();
         }
+
+        if(eyeDataLogger.IsLogging())
+        {
+            eyeDataLogger.StopLogging();
+        }
         videoPlayer.Stop();
         audioSource.Stop();
         videoPlayer.targetTexture.Release();
@@ -140,7 +183,7 @@ public class VideoController : MonoBehaviour
     private float PrepareMediaToPlay(int id)
     {
         float startTime = 0.0f;                 //Starting video/audio timestamp                        
-        videoPlayer.Prepare();                  //Important if we want to seek to a random timestamp before playing the video
+        videoPlayer.Prepare();                  //Required if we want to seek to a random timestamp before playing the video
 
         //Mute audio from the video clip, ambisonic audio will be loaded and played through a different file
         for (ushort i = 0; i < videoPlayer.audioTrackCount; i++)
@@ -167,7 +210,7 @@ public class VideoController : MonoBehaviour
                     startTime = Random.Range(0.0f, (float)(videoPlayer.clip.length - timeToShowEachClip));
                     videoPlayer.time = (double)startTime;
                     audioSource.time = startTime;
-                    Debug.Log("Se va a empezar la reproducción en el segundo " + (double)startTime + " del video con duracion " + videoPlayer.clip.length);  //DEBUG
+                    Debug.Log("Starting video reproduction at " + (double)startTime + " seconds " + videoPlayer.clip.length);  //DEBUG
                 }
                 else
                 {
@@ -196,12 +239,12 @@ public class VideoController : MonoBehaviour
         {
             case StartingHeadOrientation.randomize90DegIntervals:
                 int cameraOrientation = Random.Range(0, 3);
-                mainCamera.transform.eulerAngles = new Vector3(0, 90 * cameraOrientation, 0);
+                cameraParent.transform.eulerAngles = new Vector3(0, 90 * cameraOrientation, 0);
                 break;
-            case StartingHeadOrientation.fullyRandomized:                       //TODO uniform cosine sampling? i don't think this is necessary
+            case StartingHeadOrientation.fullyRandomized:
                 float pitchRotationDegrees = Random.Range(-90.0f, 90.0f);
                 float yawRotationDegrees = Random.Range(-180.0f, 180.0f);
-                mainCamera.transform.eulerAngles = new Vector3(pitchRotationDegrees, yawRotationDegrees, 0);
+                cameraParent.transform.eulerAngles = new Vector3(pitchRotationDegrees, yawRotationDegrees, 0);
                 break;
             default:            //noRotation --> nothing to be done
                 break;
@@ -226,6 +269,7 @@ public class VideoController : MonoBehaviour
         audioSource.clip = audios[id];
         float startTime = PrepareMediaToPlay(id);
         headLogger.StartLogging(id, startTime);
+        eyeDataLogger.StartLogging(id, startTime);
         videoPlayer.Play();
         audioSource.Play();
     }
@@ -271,7 +315,19 @@ public class VideoController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        RaycastHit hit;
+        Debug.DrawRay(mainCamera.transform.position, mainCamera.transform.forward * 10.0f, Color.green);      //Only visible in editor window, for debugging purposes
+        if(Physics.Raycast(mainCamera.transform.position, mainCamera.transform.forward, out hit, Mathf.Infinity))
+        {
+            if(hit.collider == cubeToTriggerPlay.GetComponent<Collider>())
+            {
+                lookAtObjectTimer += Time.deltaTime;
+                if(lookAtObjectTimer >= 0.2f)                               //Time threshold to make sure the users haven't found the cube by accident, meaning they are paying attention to that specific region   //TODO parameter?
+                {
+                    objectHasBeenFound = true;
+                }
+            }
+        }
     }
 
     public bool IsReady()
