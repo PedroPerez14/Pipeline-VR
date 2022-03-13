@@ -1,6 +1,13 @@
+/*
+ * Author: Pedro José Pérez García, 756642
+ * Date: 24-02-2022 (last revision)
+ * Comms: Trabajo de fin de grado de Ingeniería Informática, Graphics and Imaging Lab, Universidad de Zaragoza
+ *          Script to have a working camera to record scanpaths using the mouse and keyboard in case that a VR HMD isn't available.
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 
 public class CameraController : MonoBehaviour
 {

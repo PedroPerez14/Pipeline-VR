@@ -1,9 +1,15 @@
+/*
+ * Author: Pedro José Pérez García, 756642
+ * Date: 24-02-2022 (last revision)
+ * Comms: Trabajo de fin de grado de Ingeniería Informática, Graphics and Imaging Lab, Universidad de Zaragoza
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using PupilLabs;
 
-public enum DesiredProgramBehavior {playClipsAndDontLogData, playClipsAndLogData, logBasedReplayMode, replayDebugMode, computeSaliencyMaps};
+public enum DesiredProgramBehavior {playClipsAndDontLogData, playClipsAndLogData, logBasedReplayMode, computeSaliencyMaps};    //Add more behavior modes here
 
 public class SceneController : MonoBehaviour
 {
@@ -11,7 +17,7 @@ public class SceneController : MonoBehaviour
     public VideoController videoController;
     public HeadPositionLogger headPositionLogger;
     public EyeDataLogger eyeDataLogger;
-    public HeadDataReplayer headDataReplayer;
+    public ScanpathReplayer scanpathReplayer;
     public SaliencyMapsGenerator saliencyMapsGenerator;
     [Header("Components that calibrate the eye tracker")]
     public GameObject calibrationRoom;
@@ -55,25 +61,25 @@ public class SceneController : MonoBehaviour
         Debug.Log("Calibration success!");
     }
 
-    // The program will start running here
+    // Entry point for the tool
     IEnumerator Start()
     {
         calSuccess = false;
-        yield return new WaitUntil(() => (videoController.IsReady() && eyeDataLogger.IsReady() && headPositionLogger.IsReady() && headDataReplayer.IsReady() && saliencyMapsGenerator.IsReady())); //Wait until every necessary component is ready to work properly
+        yield return new WaitUntil(() => (videoController.IsReady() && eyeDataLogger.IsReady() && headPositionLogger.IsReady() && scanpathReplayer.IsReady() && saliencyMapsGenerator.IsReady())); //Wait until every necessary component is ready to work properly
         switch (desiredProgramBehavior)
         {
             case DesiredProgramBehavior.playClipsAndDontLogData:                        //Just show the videos, no need for calibration
                 saliencyMapsGenerator.enabled = false;
                 headPositionLogger.enableLogging = false;
                 eyeDataLogger.enableLogging = false;
-                headDataReplayer.disableGazeVisualizer();
+                scanpathReplayer.disableGazeVisualizer();
                 yield return StartCoroutine(videoController.playVideosRandomly());
                 break;
             case DesiredProgramBehavior.playClipsAndLogData:                            //Show videos and log info; use this when conducting experiments
                 saliencyMapsGenerator.enabled = false;
                 headPositionLogger.enableLogging = true;
                 eyeDataLogger.enableLogging = true;
-                headDataReplayer.disableGazeVisualizer();
+                scanpathReplayer.disableGazeVisualizer();
                 gazeTrackerComponents.SetActive(true);                                 //disable gaze tracking
                 Debug.Log("Waiting for the HMD to connect...");
                 yield return new WaitUntil(() => requestController.IsConnected);        //Wait until the VR glasses are connected
@@ -87,18 +93,12 @@ public class SceneController : MonoBehaviour
                 saliencyMapsGenerator.enabled = false;
                 headPositionLogger.enableLogging = false;
                 eyeDataLogger.enableLogging = false;
-                yield return StartCoroutine(headDataReplayer.replayQueuedLogs());
-                break;
-            case DesiredProgramBehavior.replayDebugMode:                                //Same as logBasedReplayMode, but logging is enabled in order to compare replay logs to the original ones later
-                saliencyMapsGenerator.enabled = false;
-                headPositionLogger.enableLogging = true;
-                eyeDataLogger.enableLogging = false;
-                yield return StartCoroutine(headDataReplayer.replayQueuedLogs());
+                yield return StartCoroutine(scanpathReplayer.replayQueuedLogs());
                 break;
             case DesiredProgramBehavior.computeSaliencyMaps:                            //No need for calibration
                 headPositionLogger.enableLogging = false;
                 eyeDataLogger.enableLogging = false;
-                headDataReplayer.disableGazeVisualizer();
+                scanpathReplayer.disableGazeVisualizer();
                 yield return StartCoroutine(saliencyMapsGenerator.ComputeFixationsAndSalMaps());     //Should work ok (i guess)
                 break;
             default:                                                                    //shouldn't happen

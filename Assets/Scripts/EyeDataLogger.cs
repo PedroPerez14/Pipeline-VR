@@ -1,3 +1,8 @@
+/*
+ * Author: Pedro José Pérez García, 756642
+ * Date: 24-02-2022 (last revision)
+ * Comms: Trabajo de fin de grado de Ingeniería Informática, Graphics and Imaging Lab, Universidad de Zaragoza
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,16 +25,14 @@ public class EyeDataLogger : MonoBehaviour
     private double timeStamp;                           //Time on which the user's eyes were at a certain position and had a certain rotation, logged into the csv file
     private double startSystemTime;                     //We need a reference timestamp, so we check the System clock for that (slightly more precise than using Unity's Time.time)
 
-    private bool isReady = false;                       //Needed for synchronization at the start of execution (?)//TODO
-
-    //Using WaitForSeconds has a 0.1 ~ 0.5 milliseconds error margin between samples, couldn't manage to get anything better than that, sometimes the error is about 1.5 ms
+    private bool isReady = false;                       //Needed for synchronization at the start of execution (i think?)
  
     void OnApplicationQuit()
     {
         StopLogging();
     }
 
-    private void ReceiveGaze(GazeData gazeData)
+    private void ReceiveGaze(GazeData gazeData)        //Change this and CreateLog() if you want to log additional data on eye tracking behavior
     {
 
         if (File.Exists(fullPath))
@@ -76,7 +79,7 @@ public class EyeDataLogger : MonoBehaviour
     {
     }
 
-    void CreateLog(int clipID, float startTimestamp)
+    void CreateLog(int clipID, float startTimestamp)        //Change this and ReceiveGaze() if you want to log additional data on eye tracking behavior
     {
         fileDate = System.DateTime.UtcNow.ToLocalTime().ToString("ddMMyyyy_HHmmss");
         fullPath = Application.dataPath + "/" + loggingFolderName + "/" + fileDate + "_clip" + clipID + "_gaze" + ".csv";

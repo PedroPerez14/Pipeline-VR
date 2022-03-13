@@ -53,15 +53,14 @@ namespace PupilLabs
         {
             statusText.enabled = true;
             SetStatusText("Calibration routine is done. Waiting for results ...");
-            StartCoroutine(DisableTextAfter(0.75f));
         }
 
         private void CalibrationSucceeded()
         {
-            //statusText.enabled = true;
-            //SetStatusText("Calibration succeeded.");
+            statusText.enabled = true;
+            SetStatusText("Calibration succeeded.");
 
-            //StartCoroutine(DisableTextAfter(1));
+            StartCoroutine(DisableTextAfter(1));
         }
 
         private void CalibrationFailed()

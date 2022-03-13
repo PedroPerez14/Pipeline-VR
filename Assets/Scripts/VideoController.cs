@@ -1,3 +1,8 @@
+/*
+ * Author: Pedro José Pérez García, 756642
+ * Date: 24-02-2022 (last revision)
+ * Comms: Trabajo de fin de grado de Ingeniería Informática, Graphics and Imaging Lab, Universidad de Zaragoza
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,13 +28,13 @@ public class VideoController : MonoBehaviour
     [Header("Video showing config")]
     [SerializeField] public float timeToShowEachClip;       //Expressed in seconds
     [SerializeField] public bool findCubeBetweenClips;      //By enabling this a cube will be placed in the 3d space, looking at it will trigger the next video clip on the list //TODO
-    [HideInInspector] public float timeBetweenClips;         //Expressed in seconds
-    [SerializeField] public float audioVolume;              //This should affect the ambisonic audio clip. Affects both experiment and replay mode!
-    [SerializeField] public float playbackSpeed = 1.0f;     //Video and audio reproduction speed
+    [HideInInspector] public float timeBetweenClips;        //Expressed in seconds
+    [SerializeField] public float audioVolume;              //This should affect the ambisonic audio clip. Affects both experiment and replay mode!   
     [SerializeField] public bool enableSound;               //This should affect the ambisonic audio, the video clips will ALWAYS be muted. Affects both experiment and replay mode!
     [SerializeField] public bool randomStartingTimeStamp;   //Start at 0:00 or at a random timestamp on the interval {0:00 .. (videoLength - timeToShowEachClip)}
     [SerializeField] public StartingHeadOrientation startingHeadOrientation;
-    [HideInInspector] public GameObject cubeToTriggerPlay;  //If findCubeBetweenClips, looking at this cube for (0.2?) secs will play the enxt video and audio clips //WIP
+    [HideInInspector] public GameObject cubeToTriggerPlay;  //If findCubeBetweenClips, looking at this cube for (0.2?) secs will play the next video and audio clips
+    [SerializeField] public float timeLookingAtObjectBeforeTriggeringNextVideo = 0.2f;
 
     private VideoPlayer videoPlayer;
     private AudioSource audioSource;
@@ -226,8 +231,8 @@ public class VideoController : MonoBehaviour
         //Set playback speed after getting the clip prepared
         if (videoPlayer.canSetPlaybackSpeed)
         {
-            videoPlayer.playbackSpeed = playbackSpeed;
-            audioSource.pitch = playbackSpeed;                      //Pitch is directly linked to audio speed
+            videoPlayer.playbackSpeed = 1.0f;   //playbackSpeed;
+            audioSource.pitch = 1.0f;           //playbackSpeed;                      //Pitch is directly linked to audio speed
         }
         else
         {
@@ -322,7 +327,7 @@ public class VideoController : MonoBehaviour
             if(hit.collider == cubeToTriggerPlay.GetComponent<Collider>())
             {
                 lookAtObjectTimer += Time.deltaTime;
-                if(lookAtObjectTimer >= 0.2f)                               //Time threshold to make sure the users haven't found the cube by accident, meaning they are paying attention to that specific region   //TODO parameter?
+                if(lookAtObjectTimer >= timeLookingAtObjectBeforeTriggeringNextVideo)     //Time threshold to make sure the users haven't found the cube by accident, meaning they are paying attention to that specific region
                 {
                     objectHasBeenFound = true;
                 }

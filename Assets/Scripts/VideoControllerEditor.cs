@@ -1,3 +1,9 @@
+/*
+ * Author: Pedro José Pérez García, 756642
+ * Date: 24-02-2022 (last revision)
+ * Comms: Trabajo de fin de grado de Ingeniería Informática, Graphics and Imaging Lab, Universidad de Zaragoza
+ *          Script that hides or shows some variables in the Unity editor, depending on the selected configuration
+ */
 using UnityEditor;
 using UnityEngine;
 

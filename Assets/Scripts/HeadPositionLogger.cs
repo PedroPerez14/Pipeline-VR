@@ -1,3 +1,8 @@
+/*
+ * Author: Pedro José Pérez García, 756642
+ * Date: 24-02-2022 (last revision)
+ * Comms: Trabajo de fin de grado de Ingeniería Informática, Graphics and Imaging Lab, Universidad de Zaragoza
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,8 +27,6 @@ public class HeadPositionLogger : MonoBehaviour
 
     private bool isReady = false;                       //Needed for synchronization at the start of execution
 
-    //Using WaitForSeconds has a 0.1 ~ 0.5 milliseconds error margin between samples, couldn't manage to get anything better than that, sometimes the error is about 1.5 ms
-
     void OnApplicationQuit()
     {
            StopLogging();
@@ -40,7 +43,7 @@ public class HeadPositionLogger : MonoBehaviour
     {
     }
 
-    void CreateLog(int clipID, float startTimestamp)
+    void CreateLog(int clipID, float startTimestamp)    //Change this and ReceiveGaze() if you want to log additional data on eye tracking behavior
     {
         fileDate = System.DateTime.UtcNow.ToLocalTime().ToString("ddMMyyyy_HHmmss");
         fullPath = Application.dataPath + "/" + loggingFolderName + "/" + fileDate + "_clip" + clipID + "_head" + ".csv";
@@ -100,7 +103,7 @@ public class HeadPositionLogger : MonoBehaviour
         }
     }
 
-    private void ReceiveGaze(GazeData gazeData)
+    private void ReceiveGaze(GazeData gazeData)     //Change this and CreateLog() if you want to log additional data on eye tracking behavior
     {
         if (File.Exists(fullPath))
         {

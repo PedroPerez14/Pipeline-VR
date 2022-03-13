@@ -9,6 +9,9 @@
 [Bb]uilds/
 [Ll]ogs/
 [Mm]emoryCaptures/
+[Aa]ssets/360Videos/
+[Aa]ssets/360Videos.meta
+[Aa]ssets/Outputs/
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
@@ -57,7 +60,3 @@ sysinfo.txt
 
 # Crashlytics generated file
 crashlytics-build.properties
-
-Assets/360Videos/*.meta
-Assets/360Videos/*.mp4
-Assets/Outputs/

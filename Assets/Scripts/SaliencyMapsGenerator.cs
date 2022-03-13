@@ -1,3 +1,9 @@
+/*
+ * Author: Pedro José Pérez García, 756642
+ * Date: 24-02-2022 (last revision)
+ * Comms: Trabajo de fin de grado de Ingeniería Informática, Graphics and Imaging Lab, Universidad de Zaragoza
+ */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,7 +14,7 @@ using OpenCvSharp;
 using System.Threading.Tasks;
 using System.Linq;
 
-public enum FixationDetecionAlgorithm { VelocityThresholdIdentification };        //I-DT and I-VT for now
+public enum FixationDetecionAlgorithm { VelocityThresholdIdentification };      //Feel free to try other methods, only ivt seemed to work for me when using videos
 
 public class SaliencyMapsGenerator : MonoBehaviour
 {
@@ -75,14 +81,14 @@ public class SaliencyMapsGenerator : MonoBehaviour
     private int clipIndex;                                      //To be used when naming the ouputted saliency/fixation maps as images
     private ulong startingFrame = 0;
     private ulong endingFrame = 0;
-    private string clipTitle = "unknown";
+    private string clipTitle = "unknown";                       //Clip title will be determined later based on its file name
     private string fixMapsPath;
     private string salMapsPath;
 
     // ------------------------------ OUTPUT FOLDERS ------------------------------ //
-    private string outputsFolderName = "Outputs";
-    private string fixMapsFolderName = "Fixations";
-    private string salMapsFolderName = "Saliency";
+    [SerializeField] private string outputsFolderName = "Outputs";                  // You might want to change it to "Subject4_Experiment5"
+    [SerializeField] private string fixMapsFolderName = "Fixations";                // This is already coded to be a subfolder of outputsFolderName, so no need to write something like "Subject4_Experiment5/Fixations"
+    [SerializeField] private string salMapsFolderName = "Saliency";                 // This is already coded to be a subfolder of outputsFolderName,  . . .
     // ---------------------------------------------------------------------------- //
 
 
@@ -430,7 +436,7 @@ public class SaliencyMapsGenerator : MonoBehaviour
                 salMapMat.Row[i] = row;
             }
 
-            salMapMat.Normalize();
+            //salMapMat.Normalize();
             if (outputSaliencyMaps)
             {
                 Cv2.ImWrite(salMapsPath + "/" + "SAL_startFrame_" + (int)startingFrame + "_currFrame_" + currFrame + "_of_" + (int)endingFrame + ".bmp", salMapMat);
@@ -489,7 +495,7 @@ public class SaliencyMapsGenerator : MonoBehaviour
         List<Fixation> fixationsList = new List<Fixation>();
         double velocityThreshold = (double)velocityThresholdIVT;
 
-        for(int i = 0; i < angularVelocities.Length; i++)                                       //For every log we are using to calculate
+        for(int i = 0; i < angularVelocities.Length; i++)                                                                   //For every log we are using to calculate
         {
             if (dynamicVelocityThreshold)
             {
@@ -593,7 +599,6 @@ public class SaliencyMapsGenerator : MonoBehaviour
         GenerateLogCaches();
 
         isReady = true;
-        //CalculateFixations();                   //Called from mode selector, which acts as an entry point to the program
     }
 
     // Update is called once per frame
