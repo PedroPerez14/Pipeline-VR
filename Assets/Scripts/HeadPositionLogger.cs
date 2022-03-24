@@ -1,6 +1,6 @@
 /*
  * Author: Pedro José Pérez García, 756642
- * Date: 24-02-2022 (last revision)
+ * Date: 22-03-2022 (last revision)
  * Comms: Trabajo de fin de grado de Ingeniería Informática, Graphics and Imaging Lab, Universidad de Zaragoza
  */
 using System.Collections;
@@ -24,12 +24,13 @@ public class HeadPositionLogger : MonoBehaviour
     private string fullPath;                            // "loggingFolderName/fileName.csv"
     private double timeStamp;                           //Time on which the user's head was at a certain position and had a certain rotation, logged into the csv file
     private double startSystemTime;                     //We need a reference timestamp, so we check the System clock for that (slightly more precise than using Unity's Time.time)
+    private List<String> logEntries;                    //Every time a logging event arrives we'll store it here in order to reduce disk accessing operations
 
     private bool isReady = false;                       //Needed for synchronization at the start of execution
 
     void OnApplicationQuit()
     {
-           StopLogging();
+        StopLogging();
     }
 
     // Start is called before the first frame update
@@ -105,31 +106,40 @@ public class HeadPositionLogger : MonoBehaviour
 
     private void ReceiveGaze(GazeData gazeData)     //Change this and CreateLog() if you want to log additional data on eye tracking behavior
     {
-        if (File.Exists(fullPath))
-        {
-            timeStamp = ((double)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds - startSystemTime) / 1000.0; //timeStamp will be in range [0, infinity]
-            Vector3 n = headToTrack.transform.forward.normalized;
-            float u = (Mathf.Atan2(n.x, n.z) / (2.0f * Mathf.PI)) + 0.5f;
-            float v = 0.5f - (Mathf.Asin(n.y) / Mathf.PI);
+        timeStamp = ((double)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds - startSystemTime) / 1000.0; //timeStamp will be in range [0, infinity]
+        Vector3 n = headToTrack.transform.forward.normalized;
+        float u = (Mathf.Atan2(n.x, n.z) / (2.0f * Mathf.PI)) + 0.5f;
+        float v = 0.5f - (Mathf.Asin(n.y) / Mathf.PI);
 
-            File.AppendAllText(fullPath, timeStamp.ToString().Replace(",", ".") + ";("
-            + headToTrack.transform.eulerAngles.x.ToString().Replace(",", ".") + ","
-            + headToTrack.transform.eulerAngles.y.ToString().Replace(",", ".") + ","
-            + headToTrack.transform.eulerAngles.z.ToString().Replace(",", ".") + ");("
-            + headToTrack.transform.rotation.x.ToString().Replace(",", ".") + ","
-            + headToTrack.transform.rotation.y.ToString().Replace(",", ".") + ","
-            + headToTrack.transform.rotation.z.ToString().Replace(",", ".") + ","
-            + headToTrack.transform.rotation.w.ToString().Replace(",", ".") + ");("
-            + headToTrack.transform.forward.x.ToString().Replace(",", ".") + ","
-            + headToTrack.transform.forward.y.ToString().Replace(",", ".") + ","
-            + headToTrack.transform.forward.z.ToString().Replace(",", ".") + ");("
-            + u.ToString().Replace(",", ".") + "," + v.ToString().Replace(",", ".") + ");"
-            + "\n");
+        logEntries.Add(timeStamp.ToString().Replace(",", ".") + ";("
+        + headToTrack.transform.eulerAngles.x.ToString().Replace(",", ".") + ","
+        + headToTrack.transform.eulerAngles.y.ToString().Replace(",", ".") + ","
+        + headToTrack.transform.eulerAngles.z.ToString().Replace(",", ".") + ");("
+        + headToTrack.transform.rotation.x.ToString().Replace(",", ".") + ","
+        + headToTrack.transform.rotation.y.ToString().Replace(",", ".") + ","
+        + headToTrack.transform.rotation.z.ToString().Replace(",", ".") + ","
+        + headToTrack.transform.rotation.w.ToString().Replace(",", ".") + ");("
+        + headToTrack.transform.forward.x.ToString().Replace(",", ".") + ","
+        + headToTrack.transform.forward.y.ToString().Replace(",", ".") + ","
+        + headToTrack.transform.forward.z.ToString().Replace(",", ".") + ");("
+        + u.ToString().Replace(",", ".") + "," + v.ToString().Replace(",", ".") + ");"
+        + "\n");
+    }
+
+    private IEnumerator DumpLoggedInfoToFile(string path)
+    {
+        if (File.Exists(path))
+        {
+            foreach(string dataEntry in logEntries)
+            {
+                File.AppendAllText(path, dataEntry);
+            }
         }
         else
         {
-            Debug.LogError("Logging failed: This log file does not exist! " + fullPath);
+            Debug.LogError("Logging failed: This log file does not exist! " + path);
         }
+        yield return null;
     }
 
     public void StopLogging()
@@ -138,6 +148,7 @@ public class HeadPositionLogger : MonoBehaviour
         {
             gazeController.OnReceive3dGaze -= ReceiveGaze;
             isLogging = false;
+            StartCoroutine(DumpLoggedInfoToFile(fullPath));
         }
     }
 
@@ -145,6 +156,7 @@ public class HeadPositionLogger : MonoBehaviour
     {
         if(enableLogging && !isLogging)
         {
+            logEntries = new List<String>();
             isLogging = true;
             CreateLog(clipID, startTimestamp);
             gazeController.OnReceive3dGaze += ReceiveGaze;

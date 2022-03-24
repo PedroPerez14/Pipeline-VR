@@ -1,6 +1,6 @@
 /*
  * Author: Pedro José Pérez García, 756642
- * Date: 24-02-2022 (last revision)
+ * Date: 22-03-2022 (last revision)
  * Comms: Trabajo de fin de grado de Ingeniería Informática, Graphics and Imaging Lab, Universidad de Zaragoza
  */
 using System.Collections;
@@ -24,6 +24,7 @@ public class EyeDataLogger : MonoBehaviour
     private string fullPath;                            // "loggingFolderName/fileName.csv"
     private double timeStamp;                           //Time on which the user's eyes were at a certain position and had a certain rotation, logged into the csv file
     private double startSystemTime;                     //We need a reference timestamp, so we check the System clock for that (slightly more precise than using Unity's Time.time)
+    private List<String> logEntries;                    //Every time a logging event arrives we'll store it here in order to reduce disk accessing operations
 
     private bool isReady = false;                       //Needed for synchronization at the start of execution (i think?)
  
@@ -34,9 +35,6 @@ public class EyeDataLogger : MonoBehaviour
 
     private void ReceiveGaze(GazeData gazeData)        //Change this and CreateLog() if you want to log additional data on eye tracking behavior
     {
-
-        if (File.Exists(fullPath))
-        {
             Vector3 localGazeDirection = gazeData.GazeDirection;
             Vector3 gazeDirectionWorldSpace = gazeOrigin.TransformDirection(localGazeDirection);
             timeStamp = ((double)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds - startSystemTime) / 1000.0; //timestamp will be in range [0, infinity]
@@ -46,7 +44,7 @@ public class EyeDataLogger : MonoBehaviour
             Quaternion rotQ = Quaternion.LookRotation(gazeDirectionWorldSpace);
             Vector3 rotEuler = rotQ.eulerAngles;
 
-            File.AppendAllText(fullPath, timeStamp.ToString().Replace(",", ".") + ";("
+            logEntries.Add(timeStamp.ToString().Replace(",", ".") + ";("
             + rotEuler.x.ToString().Replace(",", ".") + ","
             + rotEuler.y.ToString().Replace(",", ".") + ","
             + rotEuler.z.ToString().Replace(",", ".") + ");("
@@ -60,12 +58,6 @@ public class EyeDataLogger : MonoBehaviour
             + u.ToString().Replace(",", ".") + ","
             + v.ToString().Replace(",", ".") + ");"
             + gazeData.Confidence.ToString().Replace(",", ".") + ";\n");
-        }
-        else
-        {
-            Debug.LogError("Logging failed: This log file does not exist! " + fullPath);
-        }
-
     }
 
     // Start is called before the first frame update
@@ -94,12 +86,29 @@ public class EyeDataLogger : MonoBehaviour
         }
     }
 
+    private IEnumerator DumpLoggedInfoToFile(string path)
+    {
+        if (File.Exists(path))
+        {
+            foreach(string dataEntry in logEntries)
+            {
+                File.AppendAllText(path, dataEntry);
+            }
+        }
+        else
+        {
+            Debug.LogError("Logging failed: This log file does not exist! " + path);
+        }
+        yield return null;
+    }
+
     public void StopLogging()
     {
         if (enableLogging && isLogging)
         {
             gazeController.OnReceive3dGaze -= ReceiveGaze;
             isLogging = false;
+            StartCoroutine(DumpLoggedInfoToFile(fullPath));
         }
     }
 
@@ -107,6 +116,7 @@ public class EyeDataLogger : MonoBehaviour
     {
         if (enableLogging && !isLogging)
         {
+            logEntries = new List<String>();
             isLogging = true;
             CreateLog(clipID, startTimestamp);
             gazeController.OnReceive3dGaze += ReceiveGaze;

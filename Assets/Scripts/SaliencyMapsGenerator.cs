@@ -1,6 +1,6 @@
 /*
  * Author: Pedro José Pérez García, 756642
- * Date: 24-02-2022 (last revision)
+ * Date: 22-03-2022 (last revision)
  * Comms: Trabajo de fin de grado de Ingeniería Informática, Graphics and Imaging Lab, Universidad de Zaragoza
  */
 
@@ -257,9 +257,9 @@ public class SaliencyMapsGenerator : MonoBehaviour
     public IEnumerator ComputeFixationsAndSalMaps()
     {
         //Get the corresponding video frames and check if they are within the video clip's expected range
-        startingFrame = (ulong)Math.Floor(videoController.videos[clipIndex].frameRate * start);
-        endingFrame = (ulong)Math.Floor(videoController.videos[clipIndex].frameRate * (start + secondsToConsider));
-        if (startingFrame < 0 || endingFrame < 0 || startingFrame >= videoController.videos[clipIndex].frameCount || endingFrame >= videoController.videos[clipIndex].frameCount)
+        startingFrame = (ulong)Math.Floor(videoController.videos[clipIndex].video.frameRate * start);
+        endingFrame = (ulong)Math.Floor(videoController.videos[clipIndex].video.frameRate * (start + secondsToConsider));
+        if (startingFrame < 0 || endingFrame < 0 || startingFrame >= videoController.videos[clipIndex].video.frameCount || endingFrame >= videoController.videos[clipIndex].video.frameCount)
         {
             Debug.Log("Error: Trying the desired time window isn't fully contained within the selected video clip frame count! Quitting...");
             abort = true;
@@ -281,11 +281,11 @@ public class SaliencyMapsGenerator : MonoBehaviour
         //Lastly, check if user has set the desired size for the outputted images, if 0 we have to get it from the video clip's frame dimensions
         if (outputFrameWidth == 0)
         {
-            outputFrameWidth = (int)videoController.videos[clipIndex].width;
+            outputFrameWidth = (int)videoController.videos[clipIndex].video.width;
         }
         if (outputFrameHeight == 0)
         {
-            outputFrameHeight = (int)videoController.videos[clipIndex].height;
+            outputFrameHeight = (int)videoController.videos[clipIndex].video.height;
         }
 
         if(abort)                                                                   //If config error detected during Start() it will stop here
@@ -356,8 +356,8 @@ public class SaliencyMapsGenerator : MonoBehaviour
                 Fixation fx = fixations[i];
 
                 //We consider fixations that start within the selected frame, along with the ones that have started in a previous frame but will finish in this or other future frame(s)
-                if((fx.t >= (float)currFrame / (float)videoController.videos[clipIndex].frameRate && fx.t <= ((float)currFrame + 1.0f) / (float)videoController.videos[clipIndex].frameRate) 
-                    || (fx.t <= (float)currFrame / (float)videoController.videos[clipIndex].frameRate && fx.t + fx.d >= ((float)currFrame) / (float)videoController.videos[clipIndex].frameRate))
+                if((fx.t >= (float)currFrame / (float)videoController.videos[clipIndex].video.frameRate && fx.t <= ((float)currFrame + 1.0f) / (float)videoController.videos[clipIndex].video.frameRate) 
+                    || (fx.t <= (float)currFrame / (float)videoController.videos[clipIndex].video.frameRate && fx.t + fx.d >= ((float)currFrame) / (float)videoController.videos[clipIndex].video.frameRate))
                 {
                     int w = ((int)Math.Round(fx.x * outputFrameWidth, 0)) % (outputFrameWidth);
                     int h = ((int)Math.Round(fx.y * outputFrameHeight, 0)) % (outputFrameHeight);

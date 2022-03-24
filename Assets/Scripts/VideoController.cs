@@ -1,6 +1,6 @@
 /*
  * Author: Pedro José Pérez García, 756642
- * Date: 24-02-2022 (last revision)
+ * Date: 22-03-2022 (last revision)
  * Comms: Trabajo de fin de grado de Ingeniería Informática, Graphics and Imaging Lab, Universidad de Zaragoza
  */
 using System.Collections;
@@ -11,13 +11,20 @@ using UnityEngine.Video;
 [RequireComponent(typeof(VideoPlayer))]
 
 public class VideoController : MonoBehaviour
-{
+{   
+    [System.Serializable]
+    public struct VideoData
+    {
+        public VideoClip video;
+        public Video3DLayout layout;                        //0 means mono video, 1 = stereo side by side, 2 = stereo over under format
+    }
+
     public enum StartingHeadOrientation { noRotation, randomize90DegIntervals, fullyRandomized };
 
     [SerializeField] private Camera mainCamera;
     [SerializeField] private GameObject cameraParent;
     [Header("Video pool options")]
-    [SerializeField] public VideoClip[] videos;
+    [SerializeField] public VideoData[] videos;
     [SerializeField] public AudioClip[] audios;             //Please make sure to place the audio clips in the same position as their corresponding video clip
     public int numberOfVideosToShow;                        //Number of videos to be randomly shown to the user among the preloaded ones
 
@@ -97,7 +104,7 @@ public class VideoController : MonoBehaviour
         string[] audioNames = new string[audios.Length];                                                //videos[] and audios[] should have the same length
         for(int i = 0; i < videos.Length; i++)
         {
-            videoNames[i] = videos[i].name;
+            videoNames[i] = videos[i].video.name;
             audioNames[i] = audios[i].name;
         }
         headLogger.CreateVideoNamesList(videoNames);                                                    //Create a .txt file containing the order of the video clips right before the logging starts
@@ -161,12 +168,12 @@ public class VideoController : MonoBehaviour
         UnityEditor.EditorApplication.isPlaying = false;
     }
 
-
     private void AdjustRenderTextureDimensions(int videoID)
     {
         videoPlayer.targetTexture.Release();                                            //We cannot properly redimension the RenderTexture without relesaing it first
-        videoPlayer.targetTexture.width = (int)videos[videoID].width;
-        videoPlayer.targetTexture.height = (int)videos[videoID].height;
+        videoPlayer.targetTexture.width = (int)videos[videoID].video.width;
+        videoPlayer.targetTexture.height = (int)videos[videoID].video.height;
+        RenderSettings.skybox.SetFloat("_Layout", (int)videos[videoID].layout);         //[Enum(None, 0, Side by Side, 1, Over Under, 2)] _Layout("3D Layout", Float) = 0 from the shader's code
     }
 
     private void StopCurrentlyPlayingMedia(int videoID)
@@ -270,7 +277,7 @@ public class VideoController : MonoBehaviour
 
     public void PlayMedia(int id)                    //Use this one to play videos/audio during the experiments, starting point of the video will be decided by the user
     {
-        videoPlayer.clip = videos[id];
+        videoPlayer.clip = videos[id].video;
         audioSource.clip = audios[id];
         float startTime = PrepareMediaToPlay(id);
         headLogger.StartLogging(id, startTime);
@@ -310,7 +317,7 @@ public class VideoController : MonoBehaviour
 
     public void PlayMediaFromTimestamp(int id, float startingTimestamp)  //Use this one to play videos/audio when on replay mode, starting point of the video will be determined by the log loaded by the HeadDataReplayer calling this
     {
-        videoPlayer.clip = videos[id];
+        videoPlayer.clip = videos[id].video;
         audioSource.clip = audios[id];
         PrepareMediaToPlayFromTimestamp(id, startingTimestamp);
         videoPlayer.Play();
