@@ -5,3 +5,7 @@ It is a Unity project, including plugins and packages, should be used from the e
 Documentation on how to set up and use the tool, and further details of the implementation can be found on the doc/ folder, which includes a detailed project report and an instructions manual (both in spanish).
 
 This project was my Final Bachelor's Degree Project (TFG) in my Computer Science Engineering Degree at Universidad de Zaragoza, starting Oct. 2021 and finishing in Feb. 2022.
+
+
+# Report
+You can now check the thesis report [here](https://github.com/PedroPerez14/Pipeline-VR/blob/main/report_TFG.pdf)! (in Spanish)
